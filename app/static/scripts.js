@@ -142,17 +142,20 @@ class CategoryPage{
         Object.keys(LIST_PAGE_BUTTONS).forEach(key => {
             LIST_PAGE_BUTTONS[key].off("click");
             LIST_PAGE_BUTTONS[key].on("click", ()=>{
-                this.queryGroup(LIST_PAGE_BUTTONS[key].attr("page"));
+                this.queryData.page = LIST_PAGE_BUTTONS[key].attr("page");
+                this.queryGroup();
             });
         });
-
     }
 
-    queryGroup(pageNum){
+    queryData = {};
+
+    queryGroup(){
+        console.log("queryData: ", this.queryData);
         $.getJSON({
             url:this.groupEndpoint,
             crossDomain:true,
-            data: `page=${pageNum}`,
+            data: this.queryData,
             success: (res)=>{
                 console.log("queryGroup success:");
                 console.log(res);
@@ -257,13 +260,12 @@ $( document ).ready(function() {
 function initRaceForm(racePage){
     racePage.displayDetails = displayRace;
     
+    racePage.$form.append($("<br>"));
     //name text label
-    racePage.$form.append(
-        $("<label>", 
-        { for:'raceNameField',
-            text:'Name',}
-        )
-    );
+    racePage.$form.append($("<label>", 
+    { for:'raceNameField',
+        text:'Name',}
+    ));
     
     //name text input
     racePage.$form.append(
@@ -294,6 +296,7 @@ function initRaceForm(racePage){
     racePage.$form.append($srcForm);
     $srcForm.append($("<option selected>",{value:''}));
 
+    racePage.$form.append($("<br>"));
 
     //size small label
     racePage.$form.append(
@@ -305,7 +308,7 @@ function initRaceForm(racePage){
     racePage.$form.append(
         $("<input>", { 
             type:"radio",
-            name:"raceSizeForm",
+            name:"raceSizeField",
             id:"raceSizeSmall",
             value:'S'
     }));
@@ -319,7 +322,7 @@ function initRaceForm(racePage){
     racePage.$form.append(
         $("<input>", { 
             type:"radio",
-            name:"raceSizeForm",
+            name:"raceSizeField",
             id:"raceSizeMedium",
             value:"M",
     }));
@@ -333,19 +336,21 @@ function initRaceForm(racePage){
     racePage.$form.append(
         $("<input>", { 
             type:"radio",
-            name:"raceSizeForm",
+            name:"raceSizeField",
             id:"raceSizeLarge",
             value:"L",
     }));
+
+    racePage.$form.append($("<br>"));
 
     //language label
     racePage.$form.append(
         $("<label>", 
         { for:'raceLanguageField',
-          text:'Languages',}
+          text:'Language Proficiencies',}
         )
     );
-    //source select
+    //language select
     let $langForm = $("<select>", 
     { name:'raceLanguageField',
       id:'raceLanguageField',
@@ -355,15 +360,24 @@ function initRaceForm(racePage){
     racePage.$form.append($langForm);
     $langForm.append($("<option selected>",{value:''}));
 
+    racePage.$form.append($("<br>"));
 
-
-    // //speed
-    // racePage.$form.append(
-    //     $("<input>", 
-    //     { }
-    //     )
-    // );
-
+    //language label
+    racePage.$form.append(
+        $("<label>", 
+        { for:'raceSkillField',
+            text:'Skill Proficiencies',}
+        )
+    );
+    //skills
+    let $skillForm = $("<select>", 
+    { name:'raceSkillField',
+      id:'raceSkillField',
+      form:'raceForm',
+    }
+    );
+    racePage.$form.append($skillForm);
+    $skillForm.append($("<option selected>",{value:''}));
 
     // //ability
     // racePage.$form.append(
@@ -372,17 +386,22 @@ function initRaceForm(racePage){
     //     )
     // );
 
-    // //skills
-    // racePage.$form.append(
-    //     $("<input>", 
-    //     { }
-    //     )
-    // );
+
+
+    racePage.$submit.on("click", (e) => {
+        e.preventDefault();
+        racePage.queryData.name         = $("#raceNameField").val();
+        racePage.queryData.source       = $("#raceSourceField").val();
+        racePage.queryData.size         = $("input[name='raceSizeField']:checked").val();
+        racePage.queryData.language     = $("#raceLanguageField").val();
+        racePage.queryData.skill        = $("#raceSkillField").val();
+        racePage.queryGroup();
+    });
 
 
     function buildOptions(form, list) {
         list.forEach(opt =>{
-            $langForm.append($("<option>", 
+            form.append($("<option>", 
                 { value:opt,
                   text:opt}
             ));
@@ -415,7 +434,7 @@ function initRaceForm(racePage){
         crossDomain:true,
         success: (res)=>{
             console.log("Got skills.");
-            buildOptions($langForm, res)
+            buildOptions($skillForm, res)
         }
     });
 

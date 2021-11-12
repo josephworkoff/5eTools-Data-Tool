@@ -1,3 +1,4 @@
+from mongoengine.queryset.visitor import Q
 from app import app
 from flask import render_template, jsonify, request
 from flask_cors import cross_origin
@@ -23,10 +24,21 @@ def get_races():
 
     # print(f'page:{page_num}')
 
+    name = request.args.get('name', None)
+    source = request.args.get('source', None)
+    size = request.args.get('size', None)
+    language = request.args.get('language', None)
+    skill = request.args.get('skill', None)
 
-    
+    print(request.args)
+    query = dict()
+    if name: query['name__istartswith'] = name
+    if source: query['source'] = source
+    if size: query['size'] = size
+    if language: query[f'languageProficiencies__{language}'] = True
+    if skill: query[f'skillProficiencies__{skill}'] = True
 
-    page = CommonModel.get_page_data(Race, page_num, per_page)
+    page = CommonModel.get_page_data(Race, page_num, per_page, query)
 
     return jsonify(page)
     
