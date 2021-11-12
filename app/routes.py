@@ -86,8 +86,22 @@ def get_spells():
 
     page_num = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 10)
-    print(f'page:{page_num}')
-    page = CommonModel.get_page_data(Spell, page_num, per_page)
+
+    name = request.args.get('name', None)
+    source = request.args.get('source', None)
+    duration = request.args.get('duration', None)
+    school = request.args.get('school', None)
+    level = request.args.get('level', None)
+
+    print(request.args)
+    query = dict()
+    if name: query['name__istartswith'] = name
+    if source: query['source'] = source
+    if duration: query[f'duration__type__exact'] = duration
+    if school: query['school'] = school
+    if level: query['level'] = level
+
+    page = CommonModel.get_page_data(Spell, page_num, per_page, query)
 
     return jsonify(page)
     
@@ -95,10 +109,28 @@ def get_spells():
 @app.route('/spell/<int:spellid>', methods=['GET'])
 def get_spell_by_id(spellid):
     Spell.populate()
-    spell = Spell.objects(id=spellid).first()
-    if spell != None:
-        return spell.to_dict()
-    return {}
+    return Spell.objects(id=spellid).first_or_404().to_dict()
+
+
+@app.route('/spell/field/<string:field>', methods=['GET'])
+def get_spell_field_values(field):
+    Spell.populate()
+
+    values = Spell.objects.distinct(field)
+
+    unique = []
+
+    for val in values:
+        if isinstance(val, dict):
+            if "choose" in val.keys():
+                unique = unique + list(val['choose']['from'])
+            unique = unique + list(val.keys())
+        else:
+            unique.append(val)
+
+    unique = sorted(filter(lambda x: x not in ["choose", "any", "common", "other"], list(set(unique))))
+    return jsonify(unique)
+
 
 
 @app.route('/feats', methods=['GET'])

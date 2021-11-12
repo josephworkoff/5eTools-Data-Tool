@@ -252,10 +252,19 @@ $( document ).ready(function() {
 
 
     initRaceForm(categories.race);
-    // initSpellForm(categories.spell);
+    initSpellForm(categories.spell);
 
 });
 
+
+function buildOptions(form, list) {
+    list.forEach(opt =>{
+        form.append($("<option>", 
+            { value:opt,
+              text:opt}
+        ));
+    });
+}
 
 function initRaceForm(racePage){
     racePage.displayDetails = displayRace;
@@ -390,6 +399,7 @@ function initRaceForm(racePage){
 
     racePage.$submit.on("click", (e) => {
         e.preventDefault();
+        racePage.queryData.page = 1
         racePage.queryData.name         = $("#raceNameField").val();
         racePage.queryData.source       = $("#raceSourceField").val();
         racePage.queryData.size         = $("input[name='raceSizeField']:checked").val();
@@ -397,16 +407,6 @@ function initRaceForm(racePage){
         racePage.queryData.skill        = $("#raceSkillField").val();
         racePage.queryGroup();
     });
-
-
-    function buildOptions(form, list) {
-        list.forEach(opt =>{
-            form.append($("<option>", 
-                { value:opt,
-                  text:opt}
-            ));
-        });
-    }
 
     //get sources
     $.getJSON({
@@ -438,21 +438,172 @@ function initRaceForm(racePage){
         }
     });
 
-
-
 }
 
 
 function initSpellForm(spellPage){
-    /*
-    name:text
-
-
-    */
-    
     spellPage.displayDetails = displaySpell;
+    
+    spellPage.$form.append($("<br>"));
+    //name text label
+    spellPage.$form.append($("<label>", 
+    { for:'spellNameField',
+        text:'Name',}
+    ));
+    
+    //name text input
+    spellPage.$form.append(
+        $("<input>", 
+        { type:'text',
+        name:'spellNameField',
+        id:'spellNameField',}
+        )
+    );
+        
+    spellPage.$form.append($("<br>"));
+    
+    //source label
+    spellPage.$form.append(
+        $("<label>", 
+        { for:'spellSourceField',
+          text:'Source',}
+        )
+    );
+    //source select
+    let $srcForm = $("<select>", 
+    { name:'spellSourceField',
+      id:'spellSourceField',
+      form:'spellForm',
+    }
+    );
+    spellPage.$form.append($srcForm);
+    $srcForm.append($("<option selected>",{value:''}));
+
+    spellPage.$form.append($("<br>"));
+
+    //duration instant label
+    spellPage.$form.append(
+        $("<label>", { 
+            for:'spellDurationInstant',
+            text:'Instant',
+    }));
+    //duration check box
+    spellPage.$form.append(
+        $("<input>", { 
+            type:"radio",
+            name:"spellDurationField",
+            id:"spellDurationInstant",
+            value:'instant'
+    }));
+    //duration timed label
+    spellPage.$form.append(
+        $("<label>", { 
+            for:'spellDurationTimed',
+            text:'Timed',
+    }));
+    //duration timed check box
+    spellPage.$form.append(
+        $("<input>", { 
+            type:"radio",
+            name:"spellDurationField",
+            id:"spellDurationTimed",
+            value:"timed",
+    }));
+
+    spellPage.$form.append($("<br>"));
+
+    //school label
+    spellPage.$form.append(
+        $("<label>", 
+        { for:'spellSchoolField',
+          text:'School',}
+        )
+    );
+    //school select
+    let $schoolField = $("<select>", 
+    { name:'spellSchoolField',
+      id:'spellSchoolField',
+      form:'spellForm',
+    }
+    );
+    spellPage.$form.append($schoolField);
+    $schoolField.append($("<option selected>",{value:''}));
+
+    spellPage.$form.append($("<br>"));
+
+    //level label
+    spellPage.$form.append(
+        $("<label>", 
+        { for:'spellLevelField',
+            text:'Level',}
+        )
+    );
+    //skills
+    let $levelForm = $("<select>", 
+    { name:'spellLevelField',
+      id:'spellLevelField',
+      form:'spellForm',
+    }
+    );
+    spellPage.$form.append($levelForm);
+    $levelForm.append($("<option selected>",{value:''}));
+
+
+    spellPage.$submit.on("click", (e) => {
+        e.preventDefault();
+        spellPage.queryData.page = 1
+        spellPage.queryData.name         = $("#spellNameField").val();
+        spellPage.queryData.source       = $("#spellSourceField").val();
+        spellPage.queryData.duration     = $("input[name='spellDurationField']:checked").val();
+        spellPage.queryData.school       = $("#spellSchoolField").val();
+        spellPage.queryData.level        = $("#spellLevelField").val();
+        spellPage.queryGroup();
+    });
+
+
+    //get sources
+    $.getJSON({
+        url:spellPage.singleEndpoint + "/field/source",
+        crossDomain:true,
+        success: (res)=>{
+            console.log("Got spell sources.");
+            buildOptions($srcForm, res)
+        }
+    });
+
+    //get levels
+    $.getJSON({
+        url:spellPage.singleEndpoint + "/field/level",
+        crossDomain:true,
+        success: (res)=>{
+            console.log("Got levels.");
+            buildOptions($levelForm, res)
+        }
+    });
+
+    //get schools
+    $.getJSON({
+        url:spellPage.singleEndpoint + "/field/school",
+        crossDomain:true,
+        success: (res)=>{
+            console.log("Got schools.");
+            buildOptions($schoolField, res)
+        }
+    });
 
 }
+
+
+// function initSpellForm(spellPage){
+//     /*
+//     name:text
+
+
+//     */
+    
+//     spellPage.displayDetails = displaySpell;
+
+// }
 
 
 function displayRace(race) {

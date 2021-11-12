@@ -27,7 +27,7 @@ class CommonModel:
         return sources_dict
 
     @staticmethod
-    def get_page_data(model_class, page_number=1, per_page=10, query=None):
+    def get_page_data(model_class, page_number=1, per_page=10, query={}):
         paginated = Pagination(model_class.objects.filter(**query).order_by('name'), page_number, per_page)
 
         data = {
