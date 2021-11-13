@@ -27,8 +27,10 @@ class CommonModel:
         return sources_dict
 
     @staticmethod
-    def get_page_data(model_class, page_number=1, per_page=10, query={}):
-        paginated = Pagination(model_class.objects.filter(**query).order_by('name'), page_number, per_page)
+    def get_page_data(model_class, page_number=1, per_page=10, query=None):
+        # paginated = Pagination(model_class.objects.filter(**query).order_by('name'), page_number, per_page)
+        print(query)
+        paginated = Pagination(model_class.objects(query).order_by('name'), page_number, per_page)
 
         data = {
             '_meta': {
@@ -88,7 +90,9 @@ class Race(Document):
 
 
     @staticmethod
-    def populate():
+    def populate(force:bool=False):
+        if force:
+            CommonModel.empty(Race)
 
         if Race.objects().first() != None:
             print("Race table already populated, skipping.")
@@ -206,11 +210,7 @@ class _Class(Document):
     source = db.StringField(unique_with='name')
 
     def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "source": self.source
-        }
+        return self.to_json()
 
 
     @staticmethod
@@ -279,7 +279,9 @@ class Spell(Document):
 
 
     @staticmethod
-    def populate():
+    def populate(force:bool=False):
+        if force:
+            CommonModel.empty(Spell)
 
         if Spell.objects().first() != None:
             print("Spell table already populated, skipping.")
@@ -363,37 +365,106 @@ class Background(Document):
     id = db.IntField(primary_key=True)
     name = db.StringField()
     source = db.StringField(unique_with='name')
+    skillProficiencies = db.DictField()
+    entries = db.ListField()
+    fluff = db.ListField()
+    startingEquipment = db.DictField()
+    toolProficiencies = db.DictField()
+    languageProficiencies = db.DictField()
 
     def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "source": self.source
-        }
+        return self.to_json()
 
 
     
     @staticmethod
-    def populate():
+    def populate(force:bool=False):
+        if force:
+            CommonModel.empty(Background)
+        
         if Background.objects().first() != None:
             print("Background table already populated, skipping.")
             return
 
         background_data = get('https://5e.tools/data/backgrounds.json').json()
+        fluff_data = get('https://5e.tools/data/fluff-backgrounds.json').json()
 
         background_list = background_data["background"]
+        fluff_list = fluff_data["backgroundFluff"]
+
+
+
+        def parse_entry_list(name, entry, elist):
+            if isinstance(entry, list):
+                for el in entry:
+                    parse_entry_list(name, el, elist)
+            elif isinstance(entry, dict):
+                if 'name' in entry.keys():
+                    name = entry['name']
+                if 'entries' in entry.keys():
+                    parse_entry_list(name, entry['entries'], elist)
+                elif '_copy' in entry.keys():
+                    parse_entry_list(name, entry['_copy'], elist)
+                elif '_mod' in entry.keys():
+                    parse_entry_list(name, entry['_mod'], elist)
+                elif 'mode' in entry.keys():
+                    parse_entry_list(name, entry['mode'], elist)
+            elif isinstance(entry, str):
+                for n in elist:
+                    if n[0] == name:
+                        n[1].append(entry)
+                        return
+                elist.append( (name, [entry]) )
+
 
         background_objects = []
         idnum = 0
 
         for background in background_list:
             get_attr = make_get_attr(background)
+            attr_map = {'id': idnum}
 
-            attr_map = {}
+            for attr in [
+                'name',
+                'source',
+                'entries',
+                'skillProficiencies',
+                'startingEquipment',
+                'toolProficiencies',
+                'languageProficiencies',
+            ]:
+                attr_map[attr] = get_attr(attr)
 
-            attr_map['id'] = idnum
-            attr_map['source'] = get_attr('source')
-            attr_map['name']   = get_attr('name')
+            print(idnum, attr_map['name'], attr_map['source'])
+
+
+            def get_fluff(name, source):
+                for fluff_object in fluff_list:
+                    if fluff_object['name'] == name and fluff_object["source"] == source:
+                        if "entries" not in fluff_object.keys():
+                            return None
+                        fluff_entry_list = []
+                        parse_entry_list('', fluff_object['entries'], fluff_entry_list)
+                        return fluff_entry_list
+
+
+            entries_list = []
+            parse_entry_list('', attr_map['entries'], entries_list)
+            attr_map['entries'] = entries_list
+
+            attr_map['fluff'] = get_fluff(attr_map['name'], attr_map['source'])
+
+            if attr_map['startingEquipment']:
+                attr_map['startingEquipment'] = attr_map['startingEquipment'][0]
+
+            if attr_map['languageProficiencies']:
+                attr_map['languageProficiencies'] = attr_map['languageProficiencies'][0]
+
+            if attr_map['skillProficiencies']:
+                attr_map['skillProficiencies'] = attr_map['skillProficiencies'][0]
+
+            if attr_map['toolProficiencies']:
+                attr_map['toolProficiencies'] = attr_map['toolProficiencies'][0]
 
             b = Background()
             for attr in attr_map.keys():
@@ -407,7 +478,6 @@ class Background(Document):
         return background_objects
 
 
-import json
 class Feat(Document):
 
     meta = {'collection': 'Feat'}
@@ -425,15 +495,13 @@ class Feat(Document):
     
 
     def to_dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "source": self.source
-        }
+        return self.to_json()
 
     
     @staticmethod
-    def populate():
+    def populate(force:bool=False):
+        if force:
+            CommonModel.empty(Feat)
         if Feat.objects().first() != None:
             print("Feat table already populated, skipping.")
             return
@@ -446,23 +514,34 @@ class Feat(Document):
         idnum = 0
 
         for feat in feat_list:
-            # get_attr = make_get_attr(feat)
+            get_attr = make_get_attr(feat)
 
-            # attr_map = {}
+            attr_map = {'id': idnum}
 
-            # attr_map['id'] = idnum
-            # attr_map['source'] = get_attr('source')
-            # attr_map['name']   = get_attr('name')
+            for attr in [
+                'name',
+                'source',
+                'entries',
+                'additionalSpells',
+                'otherSources',
+                'page',
+                'prerequisite',
+                'ability',
+                'skillProficiencies',
+            ]:
+                attr_map[attr] = get_attr(attr)
 
-            # f = Feat()
-            # for attr in attr_map.keys():
-            #     setattr(f, attr, attr_map[attr])
+            print(idnum, attr_map['name'], attr_map['source'])
 
-            feat_json = json.dumps(feat)
-            f = Feat.from_json(feat_json, created=False)
-            f.id = idnum
+            f = Feat()
+            for attr in attr_map.keys():
+                setattr(f, attr, attr_map[attr])
 
-            print(idnum)
+            # feat_json = json.dumps(feat)
+            # f = Feat.from_json(feat_json, created=False)
+            # f.id = idnum
+
+            # print(idnum)
             f.save()
             feat_objects.append(f)
             idnum = idnum + 1

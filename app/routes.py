@@ -5,7 +5,8 @@ from flask_cors import cross_origin
 from app.model import CommonModel, Race, _Class, Spell, Background, Feat
 
 
-BASE_URL = "https://5e.tools/data/"
+EXCLUDE_LIST = ["choose", "any", "common", "other", "anyStandard"]
+
 
 @app.route('/')
 @app.route('/index')
@@ -13,6 +14,11 @@ def index():
     return render_template('index.html')
 
 
+
+@app.route('/race/<int:raceid>', methods=['GET'])
+def get_race_by_id(raceid):
+    Race.populate()
+    return Race.objects(id=raceid).first_or_404().to_dict()
 
 @app.route('/races', methods=['GET'])
 @cross_origin()
@@ -22,34 +28,43 @@ def get_races():
     page_num = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 10, type=int), 10)
 
-    # print(f'page:{page_num}')
-
     name = request.args.get('name', None)
     source = request.args.get('source', None)
     size = request.args.get('size', None)
     language = request.args.get('language', None)
     skill = request.args.get('skill', None)
+    ability = request.args.get('ability', None)
 
     print(request.args)
-    query = dict()
-    if name: query['name__istartswith'] = name
-    if source: query['source'] = source
-    if size: query['size'] = size
-    if language: query[f'languageProficiencies__{language}'] = True
-    if skill: query[f'skillProficiencies__{skill}'] = True
+    # query = dict()
+    # if name: query['name__istartswith'] = name
+    # if source: query['source'] = source
+    # if size: query['size'] = size
+    # if language: query[f'languageProficiencies__{language}'] = True
+    # if skill: query[f'skillProficiencies__{skill}'] = True
 
-    page = CommonModel.get_page_data(Race, page_num, per_page, query)
+    queries = []
+    if name: queries.append(Q(name__istartswith=name))
+    if source: queries.append(Q(source=source))
+    if size: queries.append(Q(size=size))
+    if language: queries.append(Q(__raw__={'$or':[{f'languageProficiencies.{language}': True}, {'languageProficiencies.choose.from': language}] }))
+    if skill: queries.append(Q(__raw__={'$or':[{f'skillProficiencies.{skill}': True}, {'skillProficiencies.choose.from': skill}] }))
+    if ability: queries.append(Q(__raw__={'$or':[{f'ability.{ability}': {"$gt": 0}}, {'ability.choose.from': ability}] }))
+
+    # print(queries)
+
+    if len(queries) > 0: 
+        full_query = Q()
+        for qu in queries:
+            full_query = full_query & qu
+            # print("In bg: ", full_query)
+    else: 
+        full_query = None
+
+    page = CommonModel.get_page_data(Race, page_num, per_page, full_query)
 
     return jsonify(page)
     
-
-@app.route('/race/<int:raceid>', methods=['GET'])
-def get_race_by_id(raceid):
-    Race.populate()
-    return Race.objects(id=raceid).first_or_404().to_dict()
-
-
-
 @app.route('/race/field/<string:field>', methods=['GET'])
 def get_race_field_values(field):
     Race.populate()
@@ -66,19 +81,26 @@ def get_race_field_values(field):
         else:
             unique.append(val)
 
-    unique = sorted(filter(lambda x: x not in ["choose", "any", "common", "other"], list(set(unique))))
+    unique = sorted(filter(lambda x: x not in EXCLUDE_LIST, list(set(unique))))
     return jsonify(unique)
+
+
 
 
 @app.route('/classes', methods=['GET'])
 def get_classes():
     return 'hi'
     
-
 @app.route('/class/<int:id>', methods=['GET'])
 def get_class_by_id(id):
     return 'hello'
 
+
+
+@app.route('/spell/<int:spellid>', methods=['GET'])
+def get_spell_by_id(spellid):
+    Spell.populate()
+    return Spell.objects(id=spellid).first_or_404().to_dict()
 
 @app.route('/spells', methods=['GET'])
 def get_spells():
@@ -93,25 +115,33 @@ def get_spells():
     school = request.args.get('school', None)
     level = request.args.get('level', None)
 
-    print(request.args)
-    query = dict()
-    if name: query['name__istartswith'] = name
-    if source: query['source'] = source
-    if duration: query[f'duration__type__exact'] = duration
-    if school: query['school'] = school
-    if level: query['level'] = level
+    # if name: query['name__istartswith'] = name
+    # if source: query['source'] = source
+    # if duration: query[f'duration__type__exact'] = duration
+    # if school: query['school'] = school
+    # if level: query['level'] = level
 
-    page = CommonModel.get_page_data(Spell, page_num, per_page, query)
+    queries = []
+    if name: queries.append(Q(name__istartswith=name))
+    if source: queries.append(Q(source=source))
+    if duration: queries.append(Q(duration__type__exact=duration))
+    if school: queries.append(Q(school=school))
+    if level: queries.append(Q(level=level))
+
+    # print(queries)
+
+    if len(queries) > 0: 
+        full_query = Q()
+        for qu in queries:
+            full_query = full_query & qu
+            # print("In bg: ", full_query)
+    else: 
+        full_query = None
+
+    page = CommonModel.get_page_data(Spell, page_num, per_page, full_query)
 
     return jsonify(page)
     
-
-@app.route('/spell/<int:spellid>', methods=['GET'])
-def get_spell_by_id(spellid):
-    Spell.populate()
-    return Spell.objects(id=spellid).first_or_404().to_dict()
-
-
 @app.route('/spell/field/<string:field>', methods=['GET'])
 def get_spell_field_values(field):
     Spell.populate()
@@ -128,44 +158,125 @@ def get_spell_field_values(field):
         else:
             unique.append(val)
 
-    unique = sorted(filter(lambda x: x not in ["choose", "any", "common", "other"], list(set(unique))))
+    unique = sorted(filter(lambda x: x not in EXCLUDE_LIST, list(set(unique))))
     return jsonify(unique)
 
 
 
-@app.route('/feats', methods=['GET'])
-def get_feats():
-    Feat.populate()
-    all_feats = Feat.objects()
-    feats_list = []
-    for feat in all_feats:
-        feats_list.append(feat.to_dict_collection())
-    return feats_list
-    
 
 @app.route('/feat/<int:featid>', methods=['GET'])
 def get_feat_by_id(featid):
     Feat.populate()
-    feat = Spell.objects(id=featid).first()
-    if feat != None:
-        return feat.to_dict()
-    return {}
+    return Feat.objects(id=featid).first_or_404().to_dict()
+
+@app.route('/feats', methods=['GET'])
+def get_feats():
+    Feat.populate()
+
+    page_num = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 10)
+
+    name = request.args.get('name', None)
+    source = request.args.get('source', None)
+    skill = request.args.get('skill', None)
+    ability = request.args.get('ability', None)
+
+    print(request.args)
+    queries = []
+    if name: queries.append(Q(name__istartswith=name))
+    if source: queries.append(Q(source=source))
+    if skill: queries.append(Q(__raw__={'$or':[{f'skillProficiencies.{skill}': True}, {'skillProficiencies.choose.from': skill}] }))
+    if ability: queries.append(Q(__raw__={'$or':[{f'ability.{ability}': {"$gt": 0}}, {'ability.choose.from': ability}] }))
+
+    if len(queries) > 0: 
+        full_query = Q()
+        for qu in queries:
+            full_query = full_query & qu
+            # print("In bg: ", full_query)
+    else: 
+        full_query = None
 
 
-@app.route('/background', methods=['GET'])
-def get_backgrounds():
-    Background.populate()
-    all_backgrounds = Background.objects()
-    backgrounds_list = []
-    for background in all_backgrounds:
-        backgrounds_list.append(background.to_dict_collection())
-    return backgrounds_list
+    page = CommonModel.get_page_data(Feat, page_num, per_page, full_query)
+
+    return jsonify(page)
     
+@app.route('/feat/field/<string:field>', methods=['GET'])
+def get_feat_field_values(field):
+    Feat.populate()
+
+    values = Feat.objects.distinct(field)
+
+    unique = []
+
+    for val in values:
+        if isinstance(val, dict):
+            if "choose" in val.keys():
+                unique = unique + list(val['choose']['from'])
+            unique = unique + list(val.keys())
+        else:
+            unique.append(val)
+
+    unique = sorted(filter(lambda x: x not in EXCLUDE_LIST, list(set(unique))))
+    return jsonify(unique)
+
+
 
 @app.route('/background/<int:backgroundid>', methods=['GET'])
 def get_background_by_id(backgroundid):
     Background.populate()
-    background = Background.objects(id=backgroundid).first()
-    if background != None:
-        return background.to_dict()
-    return {}
+    return Background.objects(id=backgroundid).first_or_404().to_dict()
+
+@app.route('/backgrounds', methods=['GET'])
+def get_backgrounds():
+    Background.populate()
+
+    page_num = request.args.get('page', 1, type=int)
+    per_page = min(request.args.get('per_page', 10, type=int), 10)
+
+    name = request.args.get('name', None)
+    source = request.args.get('source', None)
+    language = request.args.get('language', None)
+    skill = request.args.get('skill', None)
+    tool = request.args.get('tool', None)
+
+    print(request.args)
+    queries = []
+    if name: queries.append(Q(name__istartswith=name))
+    if source: queries.append(Q(source=source))
+    if language: queries.append(Q(__raw__={'$or':[{f'languageProficiencies.{language}': True}, {'languageProficiencies.choose.from': language}] }))
+    if skill: queries.append(Q(__raw__={'$or':[{f'skillProficiencies.{skill}': True}, {'skillProficiencies.choose.from': skill}] }))
+    if tool: queries.append(Q(__raw__={'$or':[{f'toolProficiencies.{tool}': True}, {'toolProficiencies.choose.from': tool}] }))
+
+    # print(queries)
+
+    if len(queries) > 0: 
+        full_query = Q()
+        for qu in queries:
+            full_query = full_query & qu
+            # print("In bg: ", full_query)
+    else: 
+        full_query = None
+
+    page = CommonModel.get_page_data(Background, page_num, per_page, full_query)
+
+    return jsonify(page)
+    
+@app.route('/background/field/<string:field>', methods=['GET'])
+def get_background_field_values(field):
+    Background.populate()
+
+    values = Background.objects.distinct(field)
+
+    unique = []
+
+    for val in values:
+        if isinstance(val, dict):
+            if "choose" in val.keys():
+                unique = unique + list(val['choose']['from'])
+            unique = unique + list(val.keys())
+        else:
+            unique.append(val)
+
+    unique = sorted(filter(lambda x: x not in EXCLUDE_LIST, list(set(unique))))
+    return jsonify(unique)

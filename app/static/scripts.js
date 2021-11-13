@@ -3,8 +3,6 @@ function raceQuery(result){
 
 }
 
-const raceSources = ['AI', 'AWM', 'DMG', 'EEPC', 'EGW', 'ERLW', 'FTD', 'GGR', 'LR', 'MOT', 'MTF', 'OGA', 'PHB', 'PSA', 'PSD', 'PSI', 'PSK', 'PSX', 'PSZ', 'TCE', 'TTP', 'UA2021DraconicOptions', 'UA2021FolkOfTheFeywild', 'UA2021GothicLineages', 'UA2021TravelersOfTheMultiverse', 'UACentaursMinotaurs', 'UAEberron', 'UAEladrinAndGith', 'UAGothicHeroes', 'UARacesOfEberron', 'UARacesOfRavnica', 'UAWaterborneAdventures', 'VGM', 'VRGR', 'WBtW']
-
 const CATEGORY_HEADING = $("#categoryHeading");
 const BUTTONS_DIV = $("#categoryButtons");
 const FORM_DIV = $("#parentFormDiv");
@@ -238,9 +236,9 @@ $( document ).ready(function() {
     categories = {
         race:       new CategoryPage("Race"),
         // class:      new CategoryPage("Class"),
-        // background: new CategoryPage("Background"),
+        background: new CategoryPage("Background"),
         spell:      new CategoryPage("Spell"),
-        // feat:       new CategoryPage("Feat"),
+        feat:       new CategoryPage("Feat"),
     };
 
     for (const [key, cat] of Object.entries(categories)) {
@@ -253,6 +251,8 @@ $( document ).ready(function() {
 
     initRaceForm(categories.race);
     initSpellForm(categories.spell);
+    initBackgroundForm(categories.background);
+    initFeatForm(categories.feat);
 
 });
 
@@ -388,12 +388,24 @@ function initRaceForm(racePage){
     racePage.$form.append($skillForm);
     $skillForm.append($("<option selected>",{value:''}));
 
-    // //ability
-    // racePage.$form.append(
-    //     $("<input>", 
-    //     { }
-    //     )
-    // );
+    racePage.$form.append($("<br>"));
+
+    //ability label
+    racePage.$form.append(
+        $("<label>", 
+        { for:'raceAbilityField',
+            text:'Ability Bonus',}
+        )
+    );
+    //ability
+    let $abilityForm = $("<select>", 
+    { name:'raceAbilityField',
+      id:'raceAbilityField',
+      form:'raceForm',
+    }
+    );
+    racePage.$form.append($abilityForm);
+    $abilityForm.append($("<option selected>",{value:''}));
 
 
 
@@ -405,6 +417,7 @@ function initRaceForm(racePage){
         racePage.queryData.size         = $("input[name='raceSizeField']:checked").val();
         racePage.queryData.language     = $("#raceLanguageField").val();
         racePage.queryData.skill        = $("#raceSkillField").val();
+        racePage.queryData.ability      = $("#raceAbilityField").val();
         racePage.queryGroup();
     });
 
@@ -435,6 +448,16 @@ function initRaceForm(racePage){
         success: (res)=>{
             console.log("Got skills.");
             buildOptions($skillForm, res)
+        }
+    });
+
+    //get abilities
+    $.getJSON({
+        url:racePage.singleEndpoint + "/field/ability",
+        crossDomain:true,
+        success: (res)=>{
+            console.log("Got race abilities.");
+            buildOptions($abilityForm, res)
         }
     });
 
@@ -590,20 +613,286 @@ function initSpellForm(spellPage){
             buildOptions($schoolField, res)
         }
     });
+}
+
+
+
+function initBackgroundForm(backgroundPage){
+    backgroundPage.displayDetails = displayBackground;
+    
+    backgroundPage.$form.append($("<br>"));
+    //name text label
+    backgroundPage.$form.append($("<label>", 
+    { for:'backgroundNameField',
+        text:'Name',}
+    ));
+    
+    //name text input
+    backgroundPage.$form.append(
+        $("<input>", 
+        { type:'text',
+        name:'backgroundNameField',
+        id:'backgroundNameField',}
+        )
+    );
+        
+
+    backgroundPage.$form.append($("<br>"));
+    
+    //source label
+    backgroundPage.$form.append(
+        $("<label>", 
+        { for:'backgroundSourceField',
+          text:'Source',}
+        )
+    );
+    //source select
+    let $srcForm = $("<select>", 
+    { name:'backgroundSourceField',
+      id:'backgroundSourceField',
+      form:'backgroundForm',
+    }
+    );
+    backgroundPage.$form.append($srcForm);
+    $srcForm.append($("<option selected>",{value:''}));
+
+    backgroundPage.$form.append($("<br>"));
+
+
+    //language label
+    backgroundPage.$form.append(
+        $("<label>", 
+        { for:'backgroundLanguageField',
+          text:'Language Proficiencies',}
+        )
+    );
+    //language select
+    let $langForm = $("<select>", 
+    { name:'backgroundLanguageField',
+      id:'backgroundLanguageField',
+      form:'backgroundForm',
+    }
+    );
+    backgroundPage.$form.append($langForm);
+    $langForm.append($("<option selected>",{value:''}));
+
+    backgroundPage.$form.append($("<br>"));
+
+    //skill label
+    backgroundPage.$form.append(
+        $("<label>", 
+        { for:'backgroundSkillField',
+            text:'Skill Proficiencies',}
+        )
+    );
+    //skills
+    let $skillForm = $("<select>", 
+    { name:'backgroundSkillField',
+      id:'backgroundSkillField',
+      form:'backgroundForm',
+    }
+    );
+    backgroundPage.$form.append($skillForm);
+    $skillForm.append($("<option selected>",{value:''}));
+    
+    backgroundPage.$form.append($("<br>"));
+
+    //tool label
+    backgroundPage.$form.append(
+        $("<label>", 
+        { for:'backgroundToolField',
+            text:'Tool Proficiencies',}
+        )
+    );
+    //tools
+    let $toolForm = $("<select>", 
+    { name:'backgroundToolField',
+      id:'backgroundToolField',
+      form:'backgroundForm',
+    }
+    );
+    backgroundPage.$form.append($toolForm);
+    $toolForm.append($("<option selected>",{value:''}));
+
+
+
+
+    backgroundPage.$submit.on("click", (e) => {
+        e.preventDefault();
+        backgroundPage.queryData.page = 1
+        backgroundPage.queryData.name         = $("#backgroundNameField").val();
+        backgroundPage.queryData.source       = $("#backgroundSourceField").val();
+        backgroundPage.queryData.language     = $("#backgroundLanguageField").val();
+        backgroundPage.queryData.skill        = $("#backgroundSkillField").val();
+        backgroundPage.queryData.tool        = $("#backgroundToolField").val();
+        backgroundPage.queryGroup();
+    });
+
+    //get sources
+    $.getJSON({
+        url:backgroundPage.singleEndpoint + "/field/source",
+        crossDomain:true,
+        success: (res)=>{
+            console.log("Got Background sources");
+            buildOptions($srcForm, res)
+        }
+    });
+
+    //get languages
+    $.getJSON({
+        url:backgroundPage.singleEndpoint + "/field/languageProficiencies",
+        crossDomain:true,
+        success: (res)=>{
+            console.log("Got Background languages.");
+            buildOptions($langForm, res)
+        }
+    });
+
+    //get skills
+    $.getJSON({
+        url:backgroundPage.singleEndpoint + "/field/skillProficiencies",
+        crossDomain:true,
+        success: (res)=>{
+            console.log("Got Background skills.");
+            buildOptions($skillForm, res)
+        }
+    });
+
+    //get tools
+    $.getJSON({
+        url:backgroundPage.singleEndpoint + "/field/toolProficiencies",
+        crossDomain:true,
+        success: (res)=>{
+            console.log("Got Background tools.");
+            buildOptions($toolForm, res)
+        }
+    });
+}
+
+
+function initFeatForm(featPage){
+    featPage.displayDetails = displayFeat;
+    
+    featPage.$form.append($("<br>"));
+    //name text label
+    featPage.$form.append($("<label>", 
+    { for:'featNameField',
+        text:'Name',}
+    ));
+    
+    //name text input
+    featPage.$form.append(
+        $("<input>", 
+        { type:'text',
+        name:'featNameField',
+        id:'featNameField',}
+        )
+    );
+        
+
+    featPage.$form.append($("<br>"));
+    
+    //source label
+    featPage.$form.append(
+        $("<label>", 
+        { for:'featSourceField',
+          text:'Source',}
+        )
+    );
+    //source select
+    let $srcForm = $("<select>", 
+    { name:'featSourceField',
+      id:'featSourceField',
+      form:'featForm',
+    }
+    );
+    featPage.$form.append($srcForm);
+    $srcForm.append($("<option selected>",{value:''}));
+
+    featPage.$form.append($("<br>"));
+
+    //skill label
+    featPage.$form.append(
+        $("<label>", 
+        { for:'featSkillField',
+            text:'Skill Proficiencies',}
+        )
+    );
+    //skills
+    let $skillForm = $("<select>", 
+    { name:'featSkillField',
+      id:'featSkillField',
+      form:'featForm',
+    }
+    );
+    featPage.$form.append($skillForm);
+    $skillForm.append($("<option selected>",{value:''}));
+    
+    //ability label
+    featPage.$form.append(
+        $("<label>", 
+        { for:'featAbilityField',
+            text:'Ability Bonus',}
+        )
+    );
+    //ability
+    let $abilityForm = $("<select>", 
+    { name:'featAbilityField',
+      id:'featAbilityField',
+      form:'featForm',
+    }
+    );
+    featPage.$form.append($abilityForm);
+    $abilityForm.append($("<option selected>",{value:''}));
+
+
+    featPage.$submit.on("click", (e) => {
+        e.preventDefault();
+        featPage.queryData.page = 1
+        featPage.queryData.name         = $("#featNameField").val();
+        featPage.queryData.source       = $("#featSourceField").val();
+        featPage.queryData.skill        = $("#featSkillField").val();
+        featPage.queryData.ability      = $("#featAbilityField").val();
+        featPage.queryGroup();
+    });
+
+    //get sources
+    $.getJSON({
+        url:featPage.singleEndpoint + "/field/source",
+        crossDomain:true,
+        success: (res)=>{
+            console.log("Got feat sources");
+            buildOptions($srcForm, res)
+        }
+    });
+
+    //get skills
+    $.getJSON({
+        url:featPage.singleEndpoint + "/field/skillProficiencies",
+        crossDomain:true,
+        success: (res)=>{
+            console.log("Got feat skills.");
+            buildOptions($skillForm, res)
+        }
+    });
+
+    //get abilities
+    $.getJSON({
+        url:featPage.singleEndpoint + "/field/ability",
+        crossDomain:true,
+        success: (res)=>{
+            console.log("Got feat abilities.");
+            buildOptions($abilityForm, res)
+        }
+    });
 
 }
 
 
-// function initSpellForm(spellPage){
-//     /*
-//     name:text
 
 
-//     */
-    
-//     spellPage.displayDetails = displaySpell;
 
-// }
+
 
 
 function displayRace(race) {
@@ -631,29 +920,25 @@ function displaySpell(spell) {
 //     return;
 // }
 
-// function displayBackground(){
-//     return;    
-// }
+
+function displayBackground(background){
+    console.log("Displaying Background: " + background);
+    INFO_HEADER.text(`${background.name}(${background.source})`);
+    INFO_DIV.text("");
+    Object.keys(background).forEach(key => {
+        INFO_DIV.append(`${key}: ${background[key]} <br>`);
+    });
+}
 
 
-// function displayFeat(){
-//     return;
+function displayFeat(feat){
+    console.log("Displaying feat: " + feat);
+    INFO_HEADER.text(`${feat.name}(${feat.source})`);
+    INFO_DIV.text("");
+    Object.keys(feat).forEach(key => {
+        INFO_DIV.append(`${key}: ${feat[key]} <br>`);
+    });
+}
 
-// }
 
 
-
-
-
-
-// $("#raceForm").on('submit', (e)=>{
-//     e.preventDefault();
-
-//     console.log("Race form submitted.")
-
-//     $.get({
-//         url:"http://localhost:5000/race/1",
-//         crossDomain:true,
-//         success: (res)=>{console.log(res);}
-//     });
-// });
