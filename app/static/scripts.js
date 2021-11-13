@@ -1,7 +1,18 @@
-function raceQuery(result){
-    console.log(result);
-
-}
+/*!	\file scripts.js
+*	\brief Front end script file.
+*
+*   \b Author: Joseph Workoff\n
+*   \b Major: CS/SD MS\n
+*   \b Creation Date: 11/01/2021\n
+*   \b Due Date: 11/13/2021\n
+*   \b Course: CSC521\n
+*   \b Professor Name: Dr. Spiegel\n
+*   \b Assignment: #2\n
+*   \b Filename: scripts.js\n
+*   \b Purpose: Create the front end UI.\n
+*   \n
+*
+*/
 
 const CATEGORY_HEADING = $("#categoryHeading");
 const BUTTONS_DIV = $("#categoryButtons");
@@ -11,6 +22,12 @@ const INFO_HEADER = $("#infoHeader");
 const INFO_DIV = $("#infoDiv");
 
 
+
+/*!
+ *	\class CategoryPage
+ *	\brief Represents a category's form elements and operations.
+ *  \n
+ */
 class CategoryPage{
     
     constructor(name){
@@ -22,7 +39,6 @@ class CategoryPage{
         this.recentQueryResults = null;
 
         console.log(`Constructing ${name} category`);
-        // this.$categoryButton = $(`<button id="${name}Button" name="${name}Button" type="button">${name}</button>`);
         this.$categoryButton = $('<button>', 
                                 { id: name + "Button",
                                   name: name + "Button",
@@ -55,11 +71,6 @@ class CategoryPage{
                 this.display();
             }
         });
-
-        // this.$formDiv.hide();
-
-
-
     }
 
     hide(){
@@ -94,18 +105,11 @@ class CategoryPage{
             });
         }
 
+        //Set the page buttons to request the proper pages
+
         Object.keys(LIST_PAGE_BUTTONS).forEach(key => {
             LIST_PAGE_BUTTONS[key].show();
         });
-
-        // let prevPage = ( (this.recentQueryResults['_meta']['page'] - 1) > 0 ) 
-        //     ? this.recentQueryResults['_meta']['page'] - 1 : 1;
-        // let nextPage = ( (this.recentQueryResults['_meta']['page'] + 1) 
-        //     <= this.recentQueryResults['_meta']['total_pages'] ) 
-        //     ? this.recentQueryResults['_meta']['page'] + 1 
-        //     : this.recentQueryResults['_meta']['total_pages'];
-
-
 
         let prevPage = 0;
         let nextPage = 0;
@@ -180,19 +184,6 @@ class CategoryPage{
 }
 
 
-
-// RACE_BUTTON.on("click", ()=>{
-//     CATEGORY_HEADING.text("Races");
-//     RACE_FORM.show();
-// });
-
-// CLASS_BUTTON.on("click", ()=>{
-//     CATEGORY_HEADING.text("Classes");
-//     CLASS_DIV.show();
-// });
-
-
-
 var categories = {};
 var LIST_PAGE_BUTTONS = {};
 var endpoints = {
@@ -257,6 +248,15 @@ $( document ).ready(function() {
 });
 
 
+/*!
+*   \fn buildOptions
+*	\param spellPage: CategoryPage object
+*	\brief Creates the spell filter form
+*   
+*   \par Description
+*   Creates all spell inputs, populates input options, and registers event handler.
+*
+*/
 function buildOptions(form, list) {
     list.forEach(opt =>{
         form.append($("<option>", 
@@ -266,6 +266,16 @@ function buildOptions(form, list) {
     });
 }
 
+
+/*!
+*   \fn initraceForm
+*	\param racePage: CategoryPage object
+*	\brief Creates the race filter form
+*   
+*   \par Description
+*   Creates all race inputs, populates input options, and registers event handler.
+*
+*/
 function initRaceForm(racePage){
     racePage.displayDetails = displayRace;
     
@@ -426,7 +436,7 @@ function initRaceForm(racePage){
         url:racePage.singleEndpoint + "/field/source",
         crossDomain:true,
         success: (res)=>{
-            console.log(res);
+            console.log("Got race sources");
             buildOptions($srcForm, res)
         }
     });
@@ -436,7 +446,7 @@ function initRaceForm(racePage){
         url:racePage.singleEndpoint + "/field/languageProficiencies",
         crossDomain:true,
         success: (res)=>{
-            console.log("Got languages.");
+            console.log("Got race languages.");
             buildOptions($langForm, res)
         }
     });
@@ -446,7 +456,7 @@ function initRaceForm(racePage){
         url:racePage.singleEndpoint + "/field/skillProficiencies",
         crossDomain:true,
         success: (res)=>{
-            console.log("Got skills.");
+            console.log("Got race skills.");
             buildOptions($skillForm, res)
         }
     });
@@ -464,6 +474,15 @@ function initRaceForm(racePage){
 }
 
 
+/*!
+*   \fn initspellForm
+*	\param spellPage: CategoryPage object
+*	\brief Creates the spell filter form
+*   
+*   \par Description
+*   Creates all spell inputs, populates input options, and registers event handler.
+*
+*/
 function initSpellForm(spellPage){
     spellPage.displayDetails = displaySpell;
     
@@ -616,7 +635,15 @@ function initSpellForm(spellPage){
 }
 
 
-
+/*!
+*   \fn initbackgroundForm
+*	\param backgroundPage: CategoryPage object
+*	\brief Creates the background filter form
+*   
+*   \par Description
+*   Creates all background inputs, populates input options, and registers event handler.
+*
+*/
 function initBackgroundForm(backgroundPage){
     backgroundPage.displayDetails = displayBackground;
     
@@ -770,6 +797,15 @@ function initBackgroundForm(backgroundPage){
 }
 
 
+/*!
+*   \fn initFeatForm
+*	\param featPage: CategoryPage object
+*	\brief Creates the feat filter form
+*   
+*   \par Description
+*   Creates all feat inputs, populates input options, and registers event handler.
+*
+*/
 function initFeatForm(featPage){
     featPage.displayDetails = displayFeat;
     
@@ -889,55 +925,30 @@ function initFeatForm(featPage){
 }
 
 
-
-
-
-
-
-
 function displayRace(race) {
     console.log("Displaying race: " + race);
     INFO_HEADER.text(`${race.name}(${race.source})`);
-    INFO_DIV.text("");
-    Object.keys(race).forEach(key => {
-        INFO_DIV.append(`${key}: ${race[key]} <br>`);
-    });
+    INFO_DIV.text(JSON.stringify(race));
 }
 
 function displaySpell(spell) {
     console.log("Displaying spell: " + spell);
     INFO_HEADER.text(`${spell.name}(${spell.source})`);
-    INFO_DIV.text("");
-    Object.keys(spell).forEach(key => {
-        INFO_DIV.append(`${key}: ${spell[key]} <br>`);
-    });
+    INFO_DIV.text(JSON.stringify(spell));
 }
-
-
-
-// function displayClass(){
-    
-//     return;
-// }
 
 
 function displayBackground(background){
     console.log("Displaying Background: " + background);
     INFO_HEADER.text(`${background.name}(${background.source})`);
-    INFO_DIV.text("");
-    Object.keys(background).forEach(key => {
-        INFO_DIV.append(`${key}: ${background[key]} <br>`);
-    });
+    INFO_DIV.text(JSON.stringify(background));
 }
 
 
 function displayFeat(feat){
     console.log("Displaying feat: " + feat);
     INFO_HEADER.text(`${feat.name}(${feat.source})`);
-    INFO_DIV.text("");
-    Object.keys(feat).forEach(key => {
-        INFO_DIV.append(`${key}: ${feat[key]} <br>`);
-    });
+    INFO_DIV.text(JSON.stringify(feat));
 }
 
 

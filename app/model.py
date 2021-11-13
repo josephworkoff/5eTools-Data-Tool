@@ -1,3 +1,18 @@
+"""@package model
+Model module for defining mongoengine DOM classes
+
+@Author: Joseph Workoff
+@Major: CS/SD MS
+@Creation Date: 10/20/2021
+@Due Date: 11/13/2021
+@Course: CSC521
+@Professor Name: Dr. Spiegel
+@Assignment: #2
+@Filename: model.py
+@Purpose: Define model classes.
+
+"""
+
 import mongoengine
 from mongoengine.fields import BooleanField, DictField
 from app import db
@@ -8,26 +23,28 @@ from requests import get
 
 
 class CommonModel:
+    """CommonModel abstract class for defining operations relevant to all model classes.
+    """
     @staticmethod
     def empty(model_class):
+        """
+        @fn empty
+        @param model_class: DOM Model class name
+        @brief Empties all documents from the database.
+        """
         model_class.objects.delete()
 
     @staticmethod
-    def get_sources(model_class):
-
-        sources_dict = {}
-        source_codes = model_class.objects.distinct("source")
-
-        books_dict = get('https://5e.tools/data/books.json').json()['book']
-
-        for book in books_dict:
-            if book['source'] in source_codes:
-                sources_dict[book['source']] = book['name']
-
-        return sources_dict
-
-    @staticmethod
     def get_page_data(model_class, page_number=1, per_page=10, query=None):
+        """
+        @fn get_page_data
+        @param model_class: 
+        @param page_number: 
+        @param per_page: 
+        @param query: 
+        @brief Performs a query for a page of the specified collection.
+        @return JSON containing abbreviated information on up to 10 documents, and meta page info.
+        """
         # paginated = Pagination(model_class.objects.filter(**query).order_by('name'), page_number, per_page)
         print(query)
         paginated = Pagination(model_class.objects(query).order_by('name'), page_number, per_page)
@@ -65,7 +82,8 @@ def make_get_attr(item: list):
 
 
 class Race(Document):
-
+    """Race DOM class
+    """
     meta = {'collection': 'Race'}
 
     id = db.IntField(primary_key=True)
@@ -91,6 +109,12 @@ class Race(Document):
 
     @staticmethod
     def populate(force:bool=False):
+        """
+        @fn populate
+        @param force: Clear the database prior to repopulating 
+        @brief Retrieves all race data from the website and uses it to populate the Collection.
+        @return list of all created Race objects.
+        """
         if force:
             CommonModel.empty(Race)
 
@@ -239,43 +263,10 @@ class Spell(Document):
     classes = db.DictField()
     conditionInflict = db.ListField()
     savingThrow = db.ListField()
-    # entriesHigherLevel
-    # miscTags
-    # areaTags
-    # damageInflict
-    # spellAttack
-    # otherSources
-    # hasFluffImages
-    # abilityCheck
-    # scalingLevelDice
-    # meta
-    # backgrounds
-    # srd
-    # races
-    # eldritchInvocations
-    # damageResist
-    # conditionImmune
-    # damageVulnerable
-    # damageImmune
-    # hasFluff
+
 
     def to_dict(self):
         return self.to_json()
-        # return {
-        #     "id": self.id,
-        #     "name": self.name,
-        #     "source": self.source,
-        #     "level": self.level,
-        #     "school": self.school,
-        #     "time": self.time,
-        #     "range": self.range,
-        #     "components": self.components,
-        #     "duration": self.duration,
-        #     "entries": self.entries,
-        #     "classes": self.classes,
-        #     "conditionInflict": self.conditionInflict,
-        #     "savingThrow": self.savingThrow
-        # }
 
 
     @staticmethod
@@ -537,11 +528,6 @@ class Feat(Document):
             for attr in attr_map.keys():
                 setattr(f, attr, attr_map[attr])
 
-            # feat_json = json.dumps(feat)
-            # f = Feat.from_json(feat_json, created=False)
-            # f.id = idnum
-
-            # print(idnum)
             f.save()
             feat_objects.append(f)
             idnum = idnum + 1

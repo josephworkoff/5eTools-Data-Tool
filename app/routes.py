@@ -1,3 +1,19 @@
+"""@package model
+Routes module for defining HTTP endpoints.
+
+@Author: Joseph Workoff
+@Major: CS/SD MS
+@Creation Date: 10/20/2021
+@Due Date: 11/13/2021
+@Course: CSC521
+@Professor Name: Dr. Spiegel
+@Assignment: #2
+@Filename: routes.py
+@Purpose: Define endpoints.
+
+"""
+
+from json import dump
 from mongoengine.queryset.visitor import Q
 from app import app
 from flask import render_template, jsonify, request
@@ -6,6 +22,14 @@ from app.model import CommonModel, Race, _Class, Spell, Background, Feat
 
 
 EXCLUDE_LIST = ["choose", "any", "common", "other", "anyStandard"]
+
+
+@app.before_first_request
+def before_first_request():
+    Race.populate()
+    Background.populate()
+    Spell.populate()
+    Feat.populate()
 
 
 @app.route('/')
@@ -17,12 +41,32 @@ def index():
 
 @app.route('/race/<int:raceid>', methods=['GET'])
 def get_race_by_id(raceid):
+    """
+    **Get Race by ID**
+    This function returns full details of a single Race denoted by ID.
+    :return: JSON representation of the Race document.
+    - Example::
+            curl -X GET https://dnd-data-tool.herokuapp.com/race/0
+    - Expected Success Response::
+        HTTP Status Code: 200
+        {"_id": 0, "name": "Aarakocra", "source": "DMG", "size": ["M"], "entries": [["Dive Attack", ["If you are flying and dive at least 30 ft. straight toward a target and then hit it with a melee weapon attack, the attack deals an extra {@dice 1d6} damage to the target."]], ["Talons", ["You are proficient with your unarmed strikes, which deal {@dice 1d4} slashing damage on a hit."]], ["Language", ["You can speak, read, and write Auran."]]], "speed": {"walk": 20, "fly": 50}, "languageProficiencies": {"auran": true}, "ability": {"dex": 2, "wis": 2}, "fluff": [], "age": {}, "skillProficiencies": {}, "traitTags": ["NPC Race", "Unarmed Strike"]}
+    """
     Race.populate()
     return Race.objects(id=raceid).first_or_404().to_dict()
 
 @app.route('/races', methods=['GET'])
 @cross_origin()
 def get_races():
+    """
+    **Get Races from parameters**
+    This function returns JSON containing abbreviated details of up to 10 races that match the specified parameters.
+    :return: Meta information on number of matched races and ID, name, and source of up to 10 matched races.
+    - Example::
+            curl -X GET https://dnd-data-tool.herokuapp.com/races
+    - Expected Success Response::
+        HTTP Status Code: 200
+        {"_meta":{"page":1,"per_page":10,"total_items":134,"total_pages":14},"items":[{"id":2,"name":"Aarakocra","source":"EEPC"},{"id":0,"name":"Aarakocra","source":"DMG"},{"id":6,"name":"Aasimar","source":"VGM"},{"id":4,"name":"Aasimar","source":"DMG"},{"id":8,"name":"Aetherborn","source":"PSK"},{"id":10,"name":"Astral Elf","source":"UA2021TravelersOfTheMultiverse"},{"id":12,"name":"Autognome","source":"UA2021TravelersOfTheMultiverse"},{"id":14,"name":"Aven","source":"PSA"},{"id":16,"name":"Aven","source":"PSD"},{"id":18,"name":"Bugbear","source":"ERLW"}]}
+    """
     Race.populate()
 
     page_num = request.args.get('page', 1, type=int)
