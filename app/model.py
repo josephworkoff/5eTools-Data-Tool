@@ -229,6 +229,8 @@ class Race(Document):
 
 
 class _Class(Document):
+    """Class DOM class. Not yet implemented
+    """
     id = db.IntField(primary_key=True)
     name = db.StringField()
     source = db.StringField(unique_with='name')
@@ -246,7 +248,8 @@ class _Class(Document):
 
 
 class Spell(Document):
-
+    """Spell DOM class
+    """
     meta = {'collection': 'Spell'}
 
     id = db.IntField(primary_key=True)
@@ -271,6 +274,12 @@ class Spell(Document):
 
     @staticmethod
     def populate(force:bool=False):
+        """
+        @fn populate
+        @param force: Clear the database prior to repopulating 
+        @brief Retrieves all spell data from the website and uses it to populate the Collection.
+        @return list of all created Spell objects.
+        """
         if force:
             CommonModel.empty(Spell)
 
@@ -350,7 +359,8 @@ class Spell(Document):
 
 
 class Background(Document):
-
+    """Spell DOM class
+    """
     meta = {'collection': 'Background'}
 
     id = db.IntField(primary_key=True)
@@ -370,6 +380,12 @@ class Background(Document):
     
     @staticmethod
     def populate(force:bool=False):
+        """
+        @fn populate
+        @param force: Clear the database prior to repopulating 
+        @brief Retrieves all Background data from the website and uses it to populate the Collection.
+        @return list of all created Background objects.
+        """
         if force:
             CommonModel.empty(Background)
         
@@ -470,7 +486,8 @@ class Background(Document):
 
 
 class Feat(Document):
-
+    """Spell DOM class
+    """
     meta = {'collection': 'Feat'}
 
     id = db.IntField(primary_key=True)
@@ -491,6 +508,12 @@ class Feat(Document):
     
     @staticmethod
     def populate(force:bool=False):
+        """
+        @fn populate
+        @param force: Clear the database prior to repopulating 
+        @brief Retrieves all Feat data from the website and uses it to populate the Collection.
+        @return list of all created Feat objects.
+        """
         if force:
             CommonModel.empty(Feat)
         if Feat.objects().first() != None:

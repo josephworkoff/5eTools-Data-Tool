@@ -863,6 +863,8 @@ function initFeatForm(featPage){
     );
     featPage.$form.append($skillForm);
     $skillForm.append($("<option selected>",{value:''}));
+
+    featPage.$form.append($("<br>"));
     
     //ability label
     featPage.$form.append(

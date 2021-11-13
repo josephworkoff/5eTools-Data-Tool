@@ -21,7 +21,7 @@ from flask_cors import cross_origin
 from app.model import CommonModel, Race, _Class, Spell, Background, Feat
 
 
-EXCLUDE_LIST = ["choose", "any", "common", "other", "anyStandard"]
+EXCLUDE_LIST = ["choose", "any", "common", "other", "anyStandard", "hidden"]
 
 
 @app.before_first_request
@@ -42,14 +42,10 @@ def index():
 @app.route('/race/<int:raceid>', methods=['GET'])
 def get_race_by_id(raceid):
     """
-    **Get Race by ID**
-    This function returns full details of a single Race denoted by ID.
-    :return: JSON representation of the Race document.
-    - Example::
-            curl -X GET https://dnd-data-tool.herokuapp.com/race/0
-    - Expected Success Response::
-        HTTP Status Code: 200
-        {"_id": 0, "name": "Aarakocra", "source": "DMG", "size": ["M"], "entries": [["Dive Attack", ["If you are flying and dive at least 30 ft. straight toward a target and then hit it with a melee weapon attack, the attack deals an extra {@dice 1d6} damage to the target."]], ["Talons", ["You are proficient with your unarmed strikes, which deal {@dice 1d4} slashing damage on a hit."]], ["Language", ["You can speak, read, and write Auran."]]], "speed": {"walk": 20, "fly": 50}, "languageProficiencies": {"auran": true}, "ability": {"dex": 2, "wis": 2}, "fluff": [], "age": {}, "skillProficiencies": {}, "traitTags": ["NPC Race", "Unarmed Strike"]}
+    @fn get_race_by_id
+    @param raceid 
+    @brief returns full details of a single Race denoted by ID.
+    @return JSON containing all fields of a single Race Document
     """
     Race.populate()
     return Race.objects(id=raceid).first_or_404().to_dict()
@@ -58,14 +54,9 @@ def get_race_by_id(raceid):
 @cross_origin()
 def get_races():
     """
-    **Get Races from parameters**
-    This function returns JSON containing abbreviated details of up to 10 races that match the specified parameters.
-    :return: Meta information on number of matched races and ID, name, and source of up to 10 matched races.
-    - Example::
-            curl -X GET https://dnd-data-tool.herokuapp.com/races
-    - Expected Success Response::
-        HTTP Status Code: 200
-        {"_meta":{"page":1,"per_page":10,"total_items":134,"total_pages":14},"items":[{"id":2,"name":"Aarakocra","source":"EEPC"},{"id":0,"name":"Aarakocra","source":"DMG"},{"id":6,"name":"Aasimar","source":"VGM"},{"id":4,"name":"Aasimar","source":"DMG"},{"id":8,"name":"Aetherborn","source":"PSK"},{"id":10,"name":"Astral Elf","source":"UA2021TravelersOfTheMultiverse"},{"id":12,"name":"Autognome","source":"UA2021TravelersOfTheMultiverse"},{"id":14,"name":"Aven","source":"PSA"},{"id":16,"name":"Aven","source":"PSD"},{"id":18,"name":"Bugbear","source":"ERLW"}]}
+    @fn get_races
+    @brief Queries for up to 10 Races based on GET parameters
+    @return JSON containing abbreviated details of up to 10 races that match the specified parameters.
     """
     Race.populate()
 
@@ -78,14 +69,6 @@ def get_races():
     language = request.args.get('language', None)
     skill = request.args.get('skill', None)
     ability = request.args.get('ability', None)
-
-    print(request.args)
-    # query = dict()
-    # if name: query['name__istartswith'] = name
-    # if source: query['source'] = source
-    # if size: query['size'] = size
-    # if language: query[f'languageProficiencies__{language}'] = True
-    # if skill: query[f'skillProficiencies__{skill}'] = True
 
     queries = []
     if name: queries.append(Q(name__istartswith=name))
@@ -111,6 +94,12 @@ def get_races():
     
 @app.route('/race/field/<string:field>', methods=['GET'])
 def get_race_field_values(field):
+    """
+    @fn get_race_field_values
+    @param field: Document field to retrieve values of 
+    @brief Queries for all distinct values of a certain document field.
+    @return list of all distinct values.
+    """
     Race.populate()
 
     values = Race.objects.distinct(field)
@@ -131,23 +120,34 @@ def get_race_field_values(field):
 
 
 
-@app.route('/classes', methods=['GET'])
-def get_classes():
-    return 'hi'
+# @app.route('/classes', methods=['GET'])
+# def get_classes():
+#     return 'hi'
     
-@app.route('/class/<int:id>', methods=['GET'])
-def get_class_by_id(id):
-    return 'hello'
+# @app.route('/class/<int:id>', methods=['GET'])
+# def get_class_by_id(id):
+#     return 'hello'
 
 
 
 @app.route('/spell/<int:spellid>', methods=['GET'])
 def get_spell_by_id(spellid):
+    """
+    @fn get_spell_by_id
+    @param spellid 
+    @brief returns full details of a single spell denoted by ID.
+    @return JSON containing all fields of a single spell Document
+    """
     Spell.populate()
     return Spell.objects(id=spellid).first_or_404().to_dict()
 
 @app.route('/spells', methods=['GET'])
 def get_spells():
+    """
+    @fn get_spells
+    @brief Queries for up to 10 spells based on GET parameters
+    @return JSON containing abbreviated details of up to 10 spells that match the specified parameters.
+    """
     Spell.populate()
 
     page_num = request.args.get('page', 1, type=int)
@@ -188,6 +188,12 @@ def get_spells():
     
 @app.route('/spell/field/<string:field>', methods=['GET'])
 def get_spell_field_values(field):
+    """
+    @fn get_spell_field_values
+    @param field: Document field to retrieve values of 
+    @brief Queries for all distinct values of a certain document field.
+    @return list of all distinct values.
+    """
     Spell.populate()
 
     values = Spell.objects.distinct(field)
@@ -210,11 +216,22 @@ def get_spell_field_values(field):
 
 @app.route('/feat/<int:featid>', methods=['GET'])
 def get_feat_by_id(featid):
+    """
+    @fn get_feat_by_id
+    @param featid 
+    @brief returns full details of a single feat denoted by ID.
+    @return JSON containing all fields of a single feat Document
+    """
     Feat.populate()
     return Feat.objects(id=featid).first_or_404().to_dict()
 
 @app.route('/feats', methods=['GET'])
 def get_feats():
+    """
+    @fn get_feats
+    @brief Queries for up to 10 feats based on GET parameters
+    @return JSON containing abbreviated details of up to 10 feats that match the specified parameters.
+    """
     Feat.populate()
 
     page_num = request.args.get('page', 1, type=int)
@@ -247,6 +264,12 @@ def get_feats():
     
 @app.route('/feat/field/<string:field>', methods=['GET'])
 def get_feat_field_values(field):
+    """
+    @fn get_feat_field_values
+    @param field: Document field to retrieve values of 
+    @brief Queries for all distinct values of a certain document field.
+    @return list of all distinct values.
+    """
     Feat.populate()
 
     values = Feat.objects.distinct(field)
@@ -268,11 +291,22 @@ def get_feat_field_values(field):
 
 @app.route('/background/<int:backgroundid>', methods=['GET'])
 def get_background_by_id(backgroundid):
+    """
+    @fn get_background_by_id
+    @param backgroundid 
+    @brief returns full details of a single background denoted by ID.
+    @return JSON containing all fields of a single background Document
+    """
     Background.populate()
     return Background.objects(id=backgroundid).first_or_404().to_dict()
 
 @app.route('/backgrounds', methods=['GET'])
 def get_backgrounds():
+    """
+    @fn get_backgrounds
+    @brief Queries for up to 10 backgrounds based on GET parameters
+    @return JSON containing abbreviated details of up to 10 backgrounds that match the specified parameters.
+    """
     Background.populate()
 
     page_num = request.args.get('page', 1, type=int)
@@ -308,6 +342,12 @@ def get_backgrounds():
     
 @app.route('/background/field/<string:field>', methods=['GET'])
 def get_background_field_values(field):
+    """
+    @fn get_background_field_values
+    @param field: Document field to retrieve values of 
+    @brief Queries for all distinct values of a certain document field.
+    @return list of all distinct values.
+    """
     Background.populate()
 
     values = Background.objects.distinct(field)
