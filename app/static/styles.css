@@ -1,0 +1,96 @@
+.body {
+    background-color: #222;
+    color: #bbb;
+    
+}
+
+.column {
+    float: left;
+}
+    
+.left {
+    width: 17%;
+   /* width: 300px; */
+    
+}
+
+.middle {
+    /*width: 50%; */
+    width: 63%;
+    border: black;
+    border-style: solid;
+    padding: 1em;
+
+}
+
+.right {
+    width: 15%;
+    margin-left: 1%;
+    /* width: 250px; */
+}
+
+.infoEntryDL {
+    padding: 1em;
+}
+
+.infoEntryDL dt {
+    padding-top: 1em;
+}
+
+.infoEntryFeatureHeader {
+    padding-left: 1em;
+    margin-bottom: -1em;
+}
+
+.infoEntryHeaderDT {
+    font-weight: bold;
+}
+
+.infoEntryItemList {
+    color: #bbb;
+}
+
+.infoDataText {
+    font-weight: lighter;
+    font-style: italic;
+    padding-top: 0%;
+    margin-top: 0%;
+}
+
+
+.infoFluffHeaderDT {
+    font-weight: bold;
+}
+
+.itemList {
+    padding: 0;
+    list-style-type: none;
+    font-weight: bold;
+}
+
+.itemListElement {
+    border: black;
+    background-color:antiquewhite;
+    color:#222;
+    cursor: pointer;
+    border-style:inset;
+    margin-bottom: -2px;
+    padding-left: 1em;
+    padding-top: .5em;
+    padding-bottom: .5em;
+}
+
+.itemListElement:hover{
+    border: black;
+    background-color: gold;
+    color:#222;
+    cursor: pointer;
+    border-style:inset;
+    margin-bottom: -2px;
+    padding-top: .5em;
+    padding-bottom: .5em;
+}
+
+#buildSelectionButton {
+    margin-bottom: 2em;
+}

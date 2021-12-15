@@ -1,22 +1,27 @@
-"""@package model
-Routes module for defining HTTP endpoints.
+##@mainpage
+# Mainpage text.
+#
 
-@Author: Joseph Workoff
-@Major: CS/SD MS
-@Creation Date: 10/20/2021
-@Due Date: 11/13/2021
-@Course: CSC521
-@Professor Name: Dr. Spiegel
-@Assignment: #2
-@Filename: routes.py
-@Purpose: Define endpoints.
 
-"""
+##@package routes
+# Routes module for defining HTTP endpoints.
+# 
+# @Author: Joseph Workoff
+# @Major: CS/SD MS
+# @Creation Date: 10/20/2021
+# @Due Date: 12/15/2021
+# @Course: CSC521
+# @Professor Name: Dr. Spiegel
+# @Assignment: #3
+# @Filename: routes.py
+# @Purpose: Define endpoints.
+
+
 
 from json import dump
 from mongoengine.queryset.visitor import Q
 from app import app
-from flask import render_template, jsonify, request
+from flask import render_template, jsonify, request, url_for
 from flask_cors import cross_origin
 from app.model import CommonModel, Race, _Class, Spell, Background, Feat
 
@@ -37,27 +42,31 @@ def before_first_request():
 def index():
     return render_template('index.html')
 
+@app.route('/info')
+def info():
+    return render_template('info.html')
+
 
 
 @app.route('/race/<int:raceid>', methods=['GET'])
+##
+# \fn get_race_by_id
+# \param raceid 
+# \brief returns full details of a single Race denoted by ID.
+# \return JSON containing all fields of a single Race Document
+#
 def get_race_by_id(raceid):
-    """
-    @fn get_race_by_id
-    @param raceid 
-    @brief returns full details of a single Race denoted by ID.
-    @return JSON containing all fields of a single Race Document
-    """
     Race.populate()
     return Race.objects(id=raceid).first_or_404().to_dict()
 
 @app.route('/races', methods=['GET'])
 @cross_origin()
+##
+# @fn get_races
+# @brief Queries for up to 10 Races based on GET parameters
+# @return JSON containing abbreviated details of up to 10 races that match the specified parameters.
+#
 def get_races():
-    """
-    @fn get_races
-    @brief Queries for up to 10 Races based on GET parameters
-    @return JSON containing abbreviated details of up to 10 races that match the specified parameters.
-    """
     Race.populate()
 
     page_num = request.args.get('page', 1, type=int)

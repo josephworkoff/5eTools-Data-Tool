@@ -1,23 +1,21 @@
-"""@package model
-Model module for defining mongoengine DOM classes
+##@package model
+# Model module for defining mongoengine DOM classes
+# 
+# @Author: Joseph Workoff
+# @Major: CS/SD MS
+# @Creation Date: 10/20/2021
+# @Due Date: 12/15/2021
+# @Course: CSC521
+# @Professor Name: Dr. Spiegel
+# @Assignment: #3
+# @Filename: model.py
+# @Purpose: Define model classes.
 
-@Author: Joseph Workoff
-@Major: CS/SD MS
-@Creation Date: 10/20/2021
-@Due Date: 11/13/2021
-@Course: CSC521
-@Professor Name: Dr. Spiegel
-@Assignment: #2
-@Filename: model.py
-@Purpose: Define model classes.
-
-"""
 
 import mongoengine
 from mongoengine.fields import BooleanField, DictField
 from app import db
 from flask_mongoengine import Document, Pagination
-# from mongoengine import StringField, Document, IntField, ListField
 from requests import get
 
 
@@ -130,7 +128,7 @@ class Race(Document):
 
         race_objects = []
 
-        idnum = 0
+        idnum = 1
 
         def parse_entry_list(name, entry, elist):
             if isinstance(entry, list):
@@ -213,7 +211,6 @@ class Race(Document):
             print(idnum, attr_map['name'], attr_map['source'])
 
             race_objects.append(r)
-            idnum = idnum + 1
 
             try:
                 r.save()
@@ -293,7 +290,7 @@ class Spell(Document):
         index = get(spells_index_url).json()
 
         spell_objects = []
-        idnum = 0
+        idnum = 1
 
         spells_list = []
 
@@ -344,7 +341,7 @@ class Spell(Document):
 
             s.save()
             spell_objects.append(s)
-            idnum = idnum + 1
+            # idnum = idnum + 1
 
             try:
                 s.save()
@@ -425,7 +422,7 @@ class Background(Document):
 
 
         background_objects = []
-        idnum = 0
+        idnum = 1
 
         for background in background_list:
             get_attr = make_get_attr(background)
@@ -525,7 +522,7 @@ class Feat(Document):
         feat_list = feat_data["feat"]
 
         feat_objects = []
-        idnum = 0
+        idnum = 1
 
         for feat in feat_list:
             get_attr = make_get_attr(feat)
@@ -546,6 +543,9 @@ class Feat(Document):
                 attr_map[attr] = get_attr(attr)
 
             print(idnum, attr_map['name'], attr_map['source'])
+
+            # if attr_map['skillProficiencies']:
+            #     attr_map['skillProficiencies'] = attr_map['skillProficiencies'][0]
 
             f = Feat()
             for attr in attr_map.keys():
