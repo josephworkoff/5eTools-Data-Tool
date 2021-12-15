@@ -111,6 +111,8 @@ export function initBuildPage() {
     const featSelections = getBuildAttrCookie("feat");
     const spellSelections = getBuildAttrCookie("spell");
 
+    let displayed = false;
+
     /*
     Requests item info for each ID in the passed array from the passed endpoint.
     Sets buildAttrDatas for each.
@@ -129,8 +131,9 @@ export function initBuildPage() {
                     } else {
                         buildAttrData[attrCategory] = res;
                     }
-                    displayBuildAttr(attrCategory, res);
-                    if (attrCategory === "race") {
+                    displayBuildAttr(attrCategory);
+                    if (displayed === false) {
+                        displayed = true;
                         buildAttrDisplayFunctions[attrCategory](res);
                     }
                 }

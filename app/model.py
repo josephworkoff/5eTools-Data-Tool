@@ -1,15 +1,15 @@
 ##@package model
-# Model module for defining mongoengine DOM classes
+# @brief Model module for defining mongoengine DOM classes
 # 
-# @Author: Joseph Workoff
-# @Major: CS/SD MS
-# @Creation Date: 10/20/2021
-# @Due Date: 12/15/2021
-# @Course: CSC521
-# @Professor Name: Dr. Spiegel
-# @Assignment: #3
-# @Filename: model.py
-# @Purpose: Define model classes.
+# \b Author: Joseph Workoff\n
+# \b Major: CS/SD MS\n
+# \b Creation Date: 10/20/2021\n
+# \b Due Date: 12/15/2021\n
+# \b Course: CSC521\n
+# \b Professor Name: Dr. Spiegel\n
+# \b Assignment: #3\n
+# \b Filename: model.py\n
+# \b Purpose: Define model classes.\n
 
 
 import mongoengine
@@ -24,25 +24,24 @@ class CommonModel:
     """CommonModel abstract class for defining operations relevant to all model classes.
     """
     @staticmethod
+    ## @fn empty
+    # @param model_class: DOM Model class name
+    # @brief Empties all documents from the database.
+    #
     def empty(model_class):
-        """
-        @fn empty
-        @param model_class: DOM Model class name
-        @brief Empties all documents from the database.
-        """
         model_class.objects.delete()
 
     @staticmethod
+    ##@fn get_page_data
+    #
+    #@param model_class: 
+    #@param page_number: 
+    #@param per_page: 
+    #@param query: 
+    #@brief Performs a query for a page of the specified collection.
+    #@return JSON containing abbreviated information on up to 10 documents, and meta page info.
+    #
     def get_page_data(model_class, page_number=1, per_page=10, query=None):
-        """
-        @fn get_page_data
-        @param model_class: 
-        @param page_number: 
-        @param per_page: 
-        @param query: 
-        @brief Performs a query for a page of the specified collection.
-        @return JSON containing abbreviated information on up to 10 documents, and meta page info.
-        """
         # paginated = Pagination(model_class.objects.filter(**query).order_by('name'), page_number, per_page)
         print(query)
         paginated = Pagination(model_class.objects(query).order_by('name'), page_number, per_page)
@@ -66,11 +65,7 @@ class CommonModel:
             "name":     model_object.name,
             "source":   model_object.source
         }
-
-
-    # @staticmethod
-    # def _(model_class):
-        
+       
 
 
 def make_get_attr(item: list):
@@ -106,13 +101,13 @@ class Race(Document):
 
 
     @staticmethod
+    ## @fn populate
+    # 
+    # @param force: Clear the database prior to repopulating 
+    # @brief Retrieves all race data from the website and uses it to populate the Collection.
+    # @return list of all created Race objects.
+    # 
     def populate(force:bool=False):
-        """
-        @fn populate
-        @param force: Clear the database prior to repopulating 
-        @brief Retrieves all race data from the website and uses it to populate the Collection.
-        @return list of all created Race objects.
-        """
         if force:
             CommonModel.empty(Race)
 
@@ -225,24 +220,6 @@ class Race(Document):
         return race_objects
 
 
-class _Class(Document):
-    """Class DOM class. Not yet implemented
-    """
-    id = db.IntField(primary_key=True)
-    name = db.StringField()
-    source = db.StringField(unique_with='name')
-
-    def to_dict(self):
-        return self.to_json()
-
-
-    @staticmethod
-    def populate():
-        pass
-
-
-
-
 
 class Spell(Document):
     """Spell DOM class
@@ -270,13 +247,12 @@ class Spell(Document):
 
 
     @staticmethod
+    ## @fn populate
+    # @param force: Clear the database prior to repopulating 
+    # @brief Retrieves all spell data from the website and uses it to populate the Collection.
+    # @return list of all created Spell objects.
+    # 
     def populate(force:bool=False):
-        """
-        @fn populate
-        @param force: Clear the database prior to repopulating 
-        @brief Retrieves all spell data from the website and uses it to populate the Collection.
-        @return list of all created Spell objects.
-        """
         if force:
             CommonModel.empty(Spell)
 
@@ -376,13 +352,13 @@ class Background(Document):
 
     
     @staticmethod
+    ## @fn populate
+    #
+    # @param force: Clear the database prior to repopulating 
+    # @brief Retrieves all Background data from the website and uses it to populate the Collection.
+    # @return list of all created Background objects.
+    #
     def populate(force:bool=False):
-        """
-        @fn populate
-        @param force: Clear the database prior to repopulating 
-        @brief Retrieves all Background data from the website and uses it to populate the Collection.
-        @return list of all created Background objects.
-        """
         if force:
             CommonModel.empty(Background)
         
@@ -504,13 +480,13 @@ class Feat(Document):
 
     
     @staticmethod
+    ## @fn populate
+    # 
+    # @param force: Clear the database prior to repopulating 
+    # @brief Retrieves all Feat data from the website and uses it to populate the Collection.
+    # @return list of all created Feat objects.
+    #
     def populate(force:bool=False):
-        """
-        @fn populate
-        @param force: Clear the database prior to repopulating 
-        @brief Retrieves all Feat data from the website and uses it to populate the Collection.
-        @return list of all created Feat objects.
-        """
         if force:
             CommonModel.empty(Feat)
         if Feat.objects().first() != None:

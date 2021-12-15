@@ -8,7 +8,6 @@ def make_shell_context():
         'routes':       routes, 
         'Race':         model.Race,
         'Spell':        model.Spell,
-        '_Class':       model._Class,
         'Background':   model.Background,
         'Feat':         model.Feat,
         'Com':          model.CommonModel

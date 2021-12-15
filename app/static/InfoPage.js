@@ -12,13 +12,14 @@ const $buildSelectionButton = $('<button>', {
 });
 
 $("#buildSelectionButtonDiv").append($buildSelectionButton);
-
+$buildSelectionButton.hide();
 var currentCategory, currentData;
 
 let currentDataIsSelected = false;
 
 
 const displayingSelectedItem = (isSelectedB)=>{
+    $buildSelectionButton.show();
     if (isSelectedB) {
         currentDataIsSelected = true;
         $buildSelectionButton.text("Remove from build");

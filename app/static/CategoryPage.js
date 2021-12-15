@@ -1,8 +1,18 @@
-/*!
- *	\class CategoryPage
- *	\brief Represents a category's form elements and operations.
- *  \n
- */
+/*!	\file CategoryPage.js
+*	\brief Class file for CategoryPage.
+*
+*   \b Author: Joseph Workoff\n
+*   \b Major: CS/SD MS\n
+*   \b Creation Date: 11/01/2021\n
+*   \b Due Date: 12/15/2021\n
+*   \b Course: CSC521\n
+*   \b Professor Name: Dr. Spiegel\n
+*   \b Assignment: #3\n
+*   \b Filename: CategoryPage.js\n
+*   \b Purpose: Create the front end UI.\n
+*   \n
+*
+*/
 
 const CATEGORY_HEADING = $("#categoryHeading");
 const BUTTONS_DIV = $("#categoryButtons");

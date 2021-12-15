@@ -1,20 +1,52 @@
 ##@mainpage
-# Mainpage text.
+# This program displays data from 5eTools (https://5e.tools/index.html), an open source 
+# (https://github.com/TheGiddyLimit/TheGiddyLimit.github.io) rules repository for the game 
+# Dungeons & Dragons 5th edition. \n
+# The game publishes official rules and content across many books. This site aggregates them into one place. \n
+# This program scrapes data contained in JSON files in 5eTools' backend /data directory and allows the user to browse through it. \n
+# A brief explanation of the game itself can be found here (https://dnd.wizards.com/basics-play).
+# This program provides an interface for browsing the game's character Races, Backgrounds, Feats, and Spells.
+# Installing and Running the server: \n
+#  - Install Python (https://www.python.org/downloads/)\n
+#  - Create a virtual environment in the top level directory\n
+#     - $ python3 -m venv venv\n
+#  - Activate the virtual environment\n
+#     - Windows: $ venv\Scripts\activate\n
+#     - Unix: $ source venv/bin/activate\n
+#  - Install the requirements into the virtual environment\n
+#     - $ python -m pip install -r requirements.txt\n
+#  - cd into app directory\n
+#  - $ flask run\n
+#  - Connect at localhost:5000.\n
+#
+# The server provides an API for querying the data and returning it as JSON. There are three similar endpoints per data type and one index, for a total of 13 routes. All are accessed through GET alone.\n
+# Each data type has the same API options, subsituting the desired data type. Using Race as an example:
+# 
+# /race/<int:raceid> : Fetches the complete JSON representation of a single race, requested by a numeric ID.  \n
+# /races : Bulk query for filtering races through GET parameters. Results are paginated in groups of 10 by default. Returns an abbreviated JSON description of the race containing ID's, Names, and Sources, as well as metainfo on how many total races match those parameters, the page number, how many are in this page, and how many pages worth of results there are. \n
+# /race/field/<string:field> : Returns a list of all distinct values that exist in the Collection for that field. \n
+#
+#Examples:\n
+#https://dnd-data-tool.herokuapp.com/race/48 retrieves data on the Dwarf race. \n
+#https://dnd-data-tool.herokuapp.com/races?source=PHB queries for races sourced from the Player's Handbook (PHB).\n
+#https://dnd-data-tool.herokuapp.com/race/field/source queries for every source material that a race in the database was originally published in. \n
+#
+#race(s) can be substituted for spell(s), background(s), and feat(s).\n
 #
 
 
 ##@package routes
 # Routes module for defining HTTP endpoints.
 # 
-# @Author: Joseph Workoff
-# @Major: CS/SD MS
-# @Creation Date: 10/20/2021
-# @Due Date: 12/15/2021
-# @Course: CSC521
-# @Professor Name: Dr. Spiegel
-# @Assignment: #3
-# @Filename: routes.py
-# @Purpose: Define endpoints.
+# \b Author: Joseph Workoff\n
+# \b Major: CS/SD MS\n
+# \b Creation Date: 10/20/2021\n
+# \b Due Date: 12/15/2021\n
+# \b Course: CSC521\n
+# \b Professor Name: Dr. Spiegel\n
+# \b Assignment: #3\n
+# \b Filename: routes.py\n
+# \b Purpose: Define endpoints.\n
 
 
 
@@ -23,7 +55,7 @@ from mongoengine.queryset.visitor import Q
 from app import app
 from flask import render_template, jsonify, request, url_for
 from flask_cors import cross_origin
-from app.model import CommonModel, Race, _Class, Spell, Background, Feat
+from app.model import CommonModel, Race, Spell, Background, Feat
 
 
 EXCLUDE_LIST = ["choose", "any", "common", "other", "anyStandard", "hidden"]
@@ -50,10 +82,10 @@ def info():
 
 @app.route('/race/<int:raceid>', methods=['GET'])
 ##
-# \fn get_race_by_id
-# \param raceid 
-# \brief returns full details of a single Race denoted by ID.
-# \return JSON containing all fields of a single Race Document
+# @fn get_race_by_id
+# @param raceid 
+# @brief returns full details of a single Race denoted by ID.
+# @return JSON containing all fields of a single Race Document
 #
 def get_race_by_id(raceid):
     Race.populate()
@@ -61,8 +93,8 @@ def get_race_by_id(raceid):
 
 @app.route('/races', methods=['GET'])
 @cross_origin()
-##
-# @fn get_races
+## @fn get_races
+# 
 # @brief Queries for up to 10 Races based on GET parameters
 # @return JSON containing abbreviated details of up to 10 races that match the specified parameters.
 #
@@ -102,13 +134,12 @@ def get_races():
     return jsonify(page)
     
 @app.route('/race/field/<string:field>', methods=['GET'])
+## @fn get_race_field_values
+#@param field: Document field to retrieve values of 
+#@brief Queries for all distinct values of a certain document field.
+#@return list of all distinct values.
+#
 def get_race_field_values(field):
-    """
-    @fn get_race_field_values
-    @param field: Document field to retrieve values of 
-    @brief Queries for all distinct values of a certain document field.
-    @return list of all distinct values.
-    """
     Race.populate()
 
     values = Race.objects.distinct(field)
@@ -128,25 +159,14 @@ def get_race_field_values(field):
 
 
 
-
-# @app.route('/classes', methods=['GET'])
-# def get_classes():
-#     return 'hi'
-    
-# @app.route('/class/<int:id>', methods=['GET'])
-# def get_class_by_id(id):
-#     return 'hello'
-
-
-
 @app.route('/spell/<int:spellid>', methods=['GET'])
+## @fn get_spell_by_id
+# 
+# @param spellid 
+# @brief returns full details of a single spell denoted by ID.
+# @return JSON containing all fields of a single spell Document
+# 
 def get_spell_by_id(spellid):
-    """
-    @fn get_spell_by_id
-    @param spellid 
-    @brief returns full details of a single spell denoted by ID.
-    @return JSON containing all fields of a single spell Document
-    """
     Spell.populate()
     return Spell.objects(id=spellid).first_or_404().to_dict()
 
@@ -196,13 +216,12 @@ def get_spells():
     return jsonify(page)
     
 @app.route('/spell/field/<string:field>', methods=['GET'])
+## @fn get_spell_field_values
+# @param field: Document field to retrieve values of 
+# @brief Queries for all distinct values of a certain document field.
+# @return list of all distinct values.
+#
 def get_spell_field_values(field):
-    """
-    @fn get_spell_field_values
-    @param field: Document field to retrieve values of 
-    @brief Queries for all distinct values of a certain document field.
-    @return list of all distinct values.
-    """
     Spell.populate()
 
     values = Spell.objects.distinct(field)
@@ -224,23 +243,21 @@ def get_spell_field_values(field):
 
 
 @app.route('/feat/<int:featid>', methods=['GET'])
+## @fn get_feat_by_id
+# @param featid 
+# @brief returns full details of a single feat denoted by ID.
+# @return JSON containing all fields of a single feat Document
+#
 def get_feat_by_id(featid):
-    """
-    @fn get_feat_by_id
-    @param featid 
-    @brief returns full details of a single feat denoted by ID.
-    @return JSON containing all fields of a single feat Document
-    """
     Feat.populate()
     return Feat.objects(id=featid).first_or_404().to_dict()
 
 @app.route('/feats', methods=['GET'])
+## @fn get_feats
+# @brief Queries for up to 10 feats based on GET parameters
+# @return JSON containing abbreviated details of up to 10 feats that match the specified parameters.
+#
 def get_feats():
-    """
-    @fn get_feats
-    @brief Queries for up to 10 feats based on GET parameters
-    @return JSON containing abbreviated details of up to 10 feats that match the specified parameters.
-    """
     Feat.populate()
 
     page_num = request.args.get('page', 1, type=int)
@@ -272,13 +289,12 @@ def get_feats():
     return jsonify(page)
     
 @app.route('/feat/field/<string:field>', methods=['GET'])
+## @fn get_feat_field_values
+#@param field: Document field to retrieve values of 
+#@brief Queries for all distinct values of a certain document field.
+#@return list of all distinct values.
+#
 def get_feat_field_values(field):
-    """
-    @fn get_feat_field_values
-    @param field: Document field to retrieve values of 
-    @brief Queries for all distinct values of a certain document field.
-    @return list of all distinct values.
-    """
     Feat.populate()
 
     values = Feat.objects.distinct(field)
@@ -299,13 +315,12 @@ def get_feat_field_values(field):
 
 
 @app.route('/background/<int:backgroundid>', methods=['GET'])
+## @fn get_background_by_id
+#@param backgroundid 
+#@brief returns full details of a single background denoted by ID.
+#@return JSON containing all fields of a single background Document
+#
 def get_background_by_id(backgroundid):
-    """
-    @fn get_background_by_id
-    @param backgroundid 
-    @brief returns full details of a single background denoted by ID.
-    @return JSON containing all fields of a single background Document
-    """
     Background.populate()
     return Background.objects(id=backgroundid).first_or_404().to_dict()
 
@@ -350,13 +365,12 @@ def get_backgrounds():
     return jsonify(page)
     
 @app.route('/background/field/<string:field>', methods=['GET'])
+## @fn get_background_field_values
+#@param field: Document field to retrieve values of 
+#@brief Queries for all distinct values of a certain document field.
+#@return list of all distinct values.
+#
 def get_background_field_values(field):
-    """
-    @fn get_background_field_values
-    @param field: Document field to retrieve values of 
-    @brief Queries for all distinct values of a certain document field.
-    @return list of all distinct values.
-    """
     Background.populate()
 
     values = Background.objects.distinct(field)
