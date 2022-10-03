@@ -20,7 +20,7 @@ Each data type has the same API options, subsituting the desired data type. Usin
 
 **Examples:**
 
-https://dnd-data-tool.herokuapp.com/race/48 retrieves data on the Dwarf race.
+https://dnd-data-tool.herokuapp.com/race/29 retrieves data on the Dwarf race.
 
 https://dnd-data-tool.herokuapp.com/races?source=PHB queries for races sourced from the Player's Handbook (PHB).
 
