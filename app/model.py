@@ -2,12 +2,7 @@
 # @brief Model module for defining mongoengine DOM classes
 # 
 # \b Author: Joseph Workoff\n
-# \b Major: CS/SD MS\n
 # \b Creation Date: 10/20/2021\n
-# \b Due Date: 12/15/2021\n
-# \b Course: CSC521\n
-# \b Professor Name: Dr. Spiegel\n
-# \b Assignment: #3\n
 # \b Filename: model.py\n
 # \b Purpose: Define model classes.\n
 

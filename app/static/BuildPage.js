@@ -165,27 +165,6 @@ function getBuildAttrCookie(category) {
 function setBuildAttrCookie(attrCategory) {
     let cookieValue;
 
-    // if (["race", "class", "background"].includes(category)) {
-    //     console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-    //     if (remove) {
-    //         Cookies.remove(category);
-    //         return;
-    //     }
-    //     else {
-    //         Cookies.set(category, selectionID, { expires: COOKIE_TIMEOUT_DAYS });
-    //         cookieValue = selectionID;
-    //     }
-    // }
-    // else if (["spell", "feat"].includes(category)){
-    //     console.log("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
-    //     if (remove){
-    //         cookieValue = getBuildAttrCookie(category).filter(i => i != selectionID);
-    //     }
-    //     else{
-    //         cookieValue = 
-    //     }
-    // }
-
     if (buildAttrData[attrCategory] === [] || buildAttrData[attrCategory] === null) {
         cookieValue = "";
     } else {
