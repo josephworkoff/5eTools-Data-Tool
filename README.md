@@ -1,5 +1,3 @@
-Currently Hosted at https://dnd-data-tool.herokuapp.com/
-
 This program displays data from [5eTools](https://5e.tools/index.html), an [open source](https://github.com/TheGiddyLimit/TheGiddyLimit.github.io) rules repository for the game Dungeons & Dragons 5th edition.
 The game publishes official rules and content across many books. This site aggregates them into one place.
 This program scrapes data contained in JSON files in 5eTools' backend /data directory and allows the user to browse through it.
@@ -17,13 +15,5 @@ Each data type has the same API options, subsituting the desired data type. Usin
 /races : Bulk query for filtering races through GET parameters. Results are paginated in groups of 10 by default. Returns an abbreviated JSON description of the race containing ID's, Names, and Sources, as well as metainfo on how many total races match those parameters, the page number, how many are in this page, and how many pages worth of results there are.
 
 /race/field/<string:field> : Returns a list of all distinct values that exist in the Collection for that field.
-
-**Examples:**
-
-https://dnd-data-tool.herokuapp.com/race/29 retrieves data on the Dwarf race.
-
-https://dnd-data-tool.herokuapp.com/races?source=PHB queries for races sourced from the Player's Handbook (PHB).
-
-https://dnd-data-tool.herokuapp.com/race/field/source queries for every source material that a race in the database was originally published in.
 
 race(s) can be substituted for spell(s), background(s), and feat(s).
